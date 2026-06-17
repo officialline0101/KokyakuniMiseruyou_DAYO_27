@@ -1825,6 +1825,9 @@ function applyPreviousSelection() {
         </div>
         <hr>
     `;
+
+            // メニュー詳細の基本料金表示も、選択中の希望日時に合わせて更新
+            refreshMenuBasicPrice();
         }
 
         // スクロール関数
@@ -1925,6 +1928,20 @@ function applyPreviousSelection() {
                 m[4] ? Number(m[4]) : 0, m[5] ? Number(m[5]) : 0, 0
             );
         }
+
+        // メニュー詳細の「基本料金」表示と改定予告を、選択中の希望日時に合わせて更新
+        function refreshMenuBasicPrice() {
+            if (!selectedPricePair) return;
+            const useNew = isNewPricing(selectedFullDate ? parseSelectedFullDate(selectedFullDate) : new Date());
+            const valueEl = document.getElementById('basicPriceValue');
+            if (valueEl) {
+                valueEl.textContent = '基本料金：' + formatYen(useNew ? selectedPricePair.new : selectedPricePair.old);
+            }
+            const noticeEl = document.getElementById('priceChangeNotice');
+            if (noticeEl) {
+                noticeEl.style.display = useNew ? 'none' : '';
+            }
+        }
         // =========================================================
 
         function selectSymptom(button, treatmentId) {
@@ -1995,15 +2012,20 @@ function applyPreviousSelection() {
                     ? `<div class="treatment-price"><span>価格：</span>${price}</div>`
                     : '';
 
-                // 基本料金は本日の日付で旧/新を自動切替（2026/9/1以降は新料金）
-                const dynamicBasic = selectedPricePair ? getBasicPriceLabel(selectedPricePair) : basic;
-                // 料金改定前（本日が2026/9/1より前）のときだけ、改定後の料金を予告表示
+                // 基本料金は「選択された希望日時」で旧/新を切替（日時未選択時は本日基準）
+                const basicUseNew = selectedPricePair
+                    ? isNewPricing(selectedFullDate ? parseSelectedFullDate(selectedFullDate) : new Date())
+                    : false;
+                const dynamicBasic = selectedPricePair
+                    ? ('基本料金：' + formatYen(basicUseNew ? selectedPricePair.new : selectedPricePair.old))
+                    : basic;
+                // 旧料金を表示しているとき（9/1より前の日時）だけ、改定後の料金を予告表示
                 let priceChangeNotice = '';
-                if (selectedPricePair && !isNewPricing(new Date())) {
-                    priceChangeNotice = `<div class="treatment-price-change">2026年09月01日より料金が次のように変更されます。<br>（9月1日以降の料金）${Number(selectedPricePair.new).toLocaleString('ja-JP')}円</div>`;
+                if (selectedPricePair) {
+                    priceChangeNotice = `<div class="treatment-price-change" id="priceChangeNotice"${basicUseNew ? ' style="display:none;"' : ''}>2026年09月01日より料金が次のように変更されます。<br>（9月1日以降の料金）${Number(selectedPricePair.new).toLocaleString('ja-JP')}円</div>`;
                 }
                 const basicContent = hasBasic
-                    ? `<div class="treatment-basic"><span></span><strong>${dynamicBasic}</strong></div>${priceChangeNotice}<div class="treatment-payment">支払い方法：現金、カード、PayPay</div>`
+                    ? `<div class="treatment-basic"><span></span><strong id="basicPriceValue">${dynamicBasic}</strong></div>${priceChangeNotice}<div class="treatment-payment">支払い方法：現金、カード、PayPay</div>`
                     : '';
 
                 // 出力順序を制御（タイトル→画像→詳細→料金→基本料金）
