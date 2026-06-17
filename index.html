@@ -1207,6 +1207,102 @@
   cursor: not-allowed;
   pointer-events: none;
 }
+
+/* カスタムチェックボックス（同意） */
+.agree-wrapper {
+    margin: 16px 0;
+    display: flex;
+    justify-content: center;
+}
+
+.agree-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    border: 2px solid #ced4da;
+    border-radius: 50px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.agree-label:hover {
+    border-color: #45c4b7;
+    box-shadow: 0 4px 12px rgba(69,196,183,0.2);
+}
+
+/* チェックボックス本体は非表示 */
+.agree-label input[type="checkbox"] {
+    display: none;
+}
+
+/* カスタムチェックアイコン */
+.agree-check-icon {
+    width: 24px;
+    height: 24px;
+    border: 2px solid #bbb;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.agree-check-icon::after {
+    content: '';
+    width: 7px;
+    height: 13px;
+    border: solid #fff;
+    border-width: 0 3px 3px 0;
+    transform: rotate(45deg) scale(0);
+    transition: transform 0.25s ease;
+    position: absolute;
+    top: 2px;
+    left: 6px;
+}
+
+/* チェック時のスタイル */
+.agree-label input[type="checkbox"]:checked ~ .agree-check-icon {
+    background: linear-gradient(135deg, #45c4b7, #38b2a5);
+    border-color: #45c4b7;
+    box-shadow: 0 2px 8px rgba(69,196,183,0.4);
+    animation: agree-pop 0.3s ease;
+}
+
+.agree-label input[type="checkbox"]:checked ~ .agree-check-icon::after {
+    transform: rotate(45deg) scale(1);
+}
+
+.agree-label input[type="checkbox"]:checked ~ .agree-text {
+    color: #45c4b7;
+}
+
+.agree-label:has(input:checked) {
+    border-color: #45c4b7;
+    background: #f0faf9;
+    box-shadow: 0 4px 14px rgba(69,196,183,0.18);
+}
+
+.agree-text {
+    transition: color 0.3s ease;
+    font-size: 15px;
+    letter-spacing: 0.5px;
+}
+
+@keyframes agree-pop {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.25); }
+    100% { transform: scale(1); }
+}
     </style>
 </head>
 
@@ -1222,7 +1318,7 @@
     <div class="container">
         <h1>
         </h1>
-<div class="info-texttop">こちらは来院予約専用です。<br>オンライン相談や訪問の予約には対応いたしかねます。ご了承ください。</div>
+<div class="info-texttop">こちらは来院予約専用です。<br><span style="color:#d6336c;font-weight:bold;">オンライン相談</span>や<span style="color:#d6336c;font-weight:bold;">訪問</span>の予約には対応いたしかねます。ご了承ください。</div>
         <!-- 追加するボタン -->
         <div class="repeat-booking-wrapper">
             <button type="button" id="repeatBookingButton" onclick="applyPreviousSelection()">
@@ -1231,10 +1327,16 @@
         </div>
 
         <div class="label">氏名<span class="required">必須</span></div>
-        <input type="text" id="name" placeholder="氏名を入力してください" oninput="saveInput('name')">
+        <div style="display:flex; gap:8px;">
+            <input type="text" id="nameSei" placeholder="苗字（例：山田）" oninput="saveInput('nameSei')" style="flex:1;">
+            <input type="text" id="nameMei" placeholder="名前（例：花子）" oninput="saveInput('nameMei')" style="flex:1;">
+        </div>
 
         <div class="label">氏名（カナ）<span class="required">必須</span></div>
-        <input type="text" id="namehurigana" placeholder="フリガナを入力してください" oninput="saveInput('namehurigana')">
+        <div style="display:flex; gap:8px;">
+            <input type="text" id="nameSeiKana" placeholder="苗字（例：ヤマダ）" oninput="saveInput('nameSeiKana')" style="flex:1;">
+            <input type="text" id="nameMeiKana" placeholder="名前（例：ハナコ）" oninput="saveInput('nameMeiKana')" style="flex:1;">
+        </div>
 
         <div class="label">電話番号<span class="required">必須</span></div>
         <input type="tel" id="phone" placeholder="電話番号を入力してください" oninput="saveInput('phone')">
@@ -1269,8 +1371,12 @@
                 style="color:#0936ff; text-decoration:underline;">
                 利用規約
             </a>条項の【6】をご確認ください。<br><br>
-            【託児の日】<br>1月：9日・21日<br>2月：13日・25日
-        </div>
+    <span style="color:red;">
+        【託児の日】<br>
+        6月：23日<br>
+        7月：7日・28日
+    </span>
+</div>
         <div class="calendar-container">
             <!-- 月を独立して配置 -->
             <div class="current-month-container">
@@ -1313,6 +1419,8 @@
             </div>
         </div>
 
+        <!-- 初診の方のみ表示されるエリア -->
+        <div id="shoshinArea" style="display: none;">
         <div class="labeltyuuou">
             <span style="color:red;">初診の方は以下の内容を<br>入力してください。</span>
         </div>
@@ -1329,10 +1437,53 @@
             ・赤ちゃんでのご予約は【生年月日】<br>
             それぞれ西暦からご記入ください。<br>
             簡単に【相談内容】と【第何子か】を教えてください。<br>
-            当日は、母子手帳と着替えをご持参ください。<br>
-            おっぱいマッサージでご予約の方はフェイスタオル3枚ご持参ください。
+            当日は、<span style="color:red;">母子手帳</span>と<span style="color:red;">着替え</span>をご持参ください。<br>
+            おっぱいマッサージでご予約の方は<span style="color:red;">フェイスタオル</span>3枚ご持参ください。
         </div>
-        <textarea id="message" rows="4" placeholder="入力してください"></textarea>
+        <div class="agree-wrapper">
+            <label class="agree-label">
+                <input type="checkbox" id="agreeCheck">
+                <span class="agree-check-icon"></span>
+                <span class="agree-text">利用規約に同意しました</span>
+            </label>
+        </div>
+        <!-- 生年月日・分娩予定日 -->
+        <div class="label">生年月日 / 分娩予定日<span class="required shoshin-required" style="display:none;">必須</span></div>
+        <div class="info-text" style="font-size:13px; padding:10px 14px; margin-bottom:6px;">
+            ベビーケアの方は赤ちゃんの生年月日を、産後整体とおっぱいマッサージの方は分娩日を、マタニティ整体の方は分娩予定日をご記入ください
+        </div>
+        <input type="text" id="msg_birthday" placeholder="例：2024年4月1日" oninput="updateMessage()">
+
+        <!-- 相談内容 -->
+        <div class="label">相談内容<span class="required shoshin-required" style="display:none;">必須</span></div>
+        <div class="info-text" style="font-size:13px; padding:10px 14px; margin-bottom:6px;">
+            箇条書きで構いませんので、相談内容をご記入ください
+        </div>
+        <textarea id="msg_consul" rows="4" placeholder="例:腰痛・乳腺炎・頭の形・抱っこ・離乳食" oninput="updateMessage()"></textarea>
+
+        <!-- 第何子ですか？ -->
+        <div class="label">第何子ですか？<span class="required shoshin-required" style="display:none;">必須</span></div>
+        <input type="text" id="msg_child" placeholder="例：第1子" oninput="updateMessage()">
+
+        <!-- 送信用の非表示textarea（実際の送信データ） -->
+        <textarea id="message" rows="1" style="display:none;"></textarea>
+        </div>
+
+        <script>
+        /* 各フィールドの内容を結合して textarea#message に格納する */
+        function updateMessage() {
+            var birthday = document.getElementById('msg_birthday').value.trim();
+            var consul   = document.getElementById('msg_consul').value.trim();
+            var child    = document.getElementById('msg_child').value.trim();
+
+            var parts = [];
+            if (birthday) parts.push('【生年月日/分娩予定日】' + birthday);
+            if (consul)   parts.push('【相談内容】' + consul);
+            if (child)    parts.push('【第何子】' + child);
+
+            document.getElementById('message').value = parts.join('\n');
+        }
+        </script>
 
         <div class="labeltyuuou">ご予約内容</div>
         <div id="displayInfo"></div> <!-- ここに選択された情報を表示します -->
@@ -1410,12 +1561,16 @@ function resetSubmitState(btn) {
 
         // ページが読み込まれたときに前回の入力内容を復元
         document.addEventListener('DOMContentLoaded', function () {
-            const savedName = localStorage.getItem('name');
-            const savednamehurigana = localStorage.getItem('namehurigana');
+            const savedNameSei = localStorage.getItem('nameSei');
+            const savedNameMei = localStorage.getItem('nameMei');
+            const savedNameSeiKana = localStorage.getItem('nameSeiKana');
+            const savedNameMeiKana = localStorage.getItem('nameMeiKana');
             const savedPhone = localStorage.getItem('phone');
 
-            if (savedName) document.getElementById('name').value = savedName;
-            if (savednamehurigana) document.getElementById('namehurigana').value = savednamehurigana;
+            if (savedNameSei) document.getElementById('nameSei').value = savedNameSei;
+            if (savedNameMei) document.getElementById('nameMei').value = savedNameMei;
+            if (savedNameSeiKana) document.getElementById('nameSeiKana').value = savedNameSeiKana;
+            if (savedNameMeiKana) document.getElementById('nameMeiKana').value = savedNameMeiKana;
             if (savedPhone) document.getElementById('phone').value = savedPhone;
         });
 
@@ -1511,8 +1666,12 @@ function applyPreviousSelection() {
 }
 
         function updateDisplayInfo() {
-            const name = document.getElementById('name').value;
-            const namehurigana = document.getElementById('namehurigana').value;
+            const nameSei = document.getElementById('nameSei').value;
+            const nameMei = document.getElementById('nameMei').value;
+            const nameSeiKana = document.getElementById('nameSeiKana').value;
+            const nameMeiKana = document.getElementById('nameMeiKana').value;
+            const name = (nameSei + ' ' + nameMei).trim();
+            const namehurigana = (nameSeiKana + ' ' + nameMeiKana).trim();
             const phone = document.getElementById('phone').value;
             const labelStyle = "color:#0c0c0c; font-size:14px; border:1px solid #0c0c0c; padding:0px 3px; border-radius:4px;";
 
@@ -1543,6 +1702,21 @@ function applyPreviousSelection() {
                 ? `<span style="${labelStyle}"><strong>希望日時</strong></span> 　${selectedFullDate}`
                 : '・日時が未選択です';
 
+            // 料金（希望日時が2026/9/1以降なら新料金。日時未選択時は本日の日付で判定）
+            let priceFieldText;
+            if (!selectedPricePair) {
+                priceFieldText = `<span style="${labelStyle}"><strong>料金</strong></span> 　・メニューが未選択です`;
+            } else {
+                const priceRefDate = selectedFullDate ? parseSelectedFullDate(selectedFullDate) : new Date();
+                const useNew = isNewPricing(priceRefDate);
+                const amount = useNew ? selectedPricePair.new : selectedPricePair.old;
+                priceFieldText = `<span style="${labelStyle}"><strong>料金</strong></span> 　${formatYen(amount)}`;
+                // 9月1日以降の希望日時が選択され、新料金が表示されるときは注意書きを出す
+                if (selectedFullDate && useNew) {
+                    priceFieldText += `<div style="margin-top:6px; color:#d6336c; font-weight:bold; font-size:13px; line-height:1.5; background:#fff5f8; border:1px solid #d6336c; border-radius:6px; padding:8px;">9月1日より料金変更となるため、こちらの料金になります。<br>ご認識のほどよろしくお願いいたします。</div>`;
+                }
+            }
+
             // 修正ボタン付きのHTMLを作成
             document.getElementById('displayInfo').innerHTML = `
         <div class="info-row">
@@ -1571,6 +1745,10 @@ function applyPreviousSelection() {
         </div>
         <hr>
         <div class="info-row">
+            <p>${priceFieldText}</p>
+        </div>
+        <hr>
+        <div class="info-row">
             <p>${selectedDateText}</p>
             <button class="edit-button" onclick="scrollToElement('calendar1')">修正</button>
         </div>
@@ -1587,8 +1765,10 @@ function applyPreviousSelection() {
         }
 
         // 各ボタンや入力フィールドでupdateDisplayInfoを呼び出すようにする
-        document.getElementById('name').addEventListener('input', updateDisplayInfo);
-        document.getElementById('namehurigana').addEventListener('input', updateDisplayInfo);
+        document.getElementById('nameSei').addEventListener('input', updateDisplayInfo);
+        document.getElementById('nameMei').addEventListener('input', updateDisplayInfo);
+        document.getElementById('nameSeiKana').addEventListener('input', updateDisplayInfo);
+        document.getElementById('nameMeiKana').addEventListener('input', updateDisplayInfo);
         document.getElementById('phone').addEventListener('input', updateDisplayInfo);
         document.querySelectorAll('.visit-buttons button').forEach(button => {
             button.addEventListener('click', updateDisplayInfo);
@@ -1630,6 +1810,52 @@ function applyPreviousSelection() {
             });
         });
 
+        // === 料金変更（2026年9月1日より）===========================
+        // 2026/9/1 0:00 以降は新料金、それ以前は旧料金を適用する
+        const PRICE_CHANGE_DATE = new Date(2026, 8, 1, 0, 0, 0); // 月は0始まり → 8 = 9月
+
+        // メニューごとの 旧料金 / 新料金（treatmentId 単位）
+        const MENU_PRICES = {
+            treatment1: { old: 9360,  new: 9500 },  // マタニティ整体
+            treatment2: { old: 9360,  new: 9500 },  // 産後整体
+            treatment3: { old: 9360,  new: 9500 },  // ベビーケア・育児相談
+            treatment4: { old: 6240,  new: 6400 },  // 産後ピラティス
+            treatment5: { old: 18400, new: 18700 }, // 母子ケア
+            treatment6: { old: 27560, new: 28000 }, // ファミリーケア
+            treatment7: { old: 9360,  new: 9500 },  // 整体
+            treatment8: { old: 9360,  new: 9500 }   // おっぱいマッサージ
+        };
+
+        // 選択中メニューの料金ペア（ご予約内容の「料金」表示に使用）
+        let selectedPricePair = null;
+
+        // 指定日が新料金適用日（2026/9/1以降）かどうか
+        function isNewPricing(dateObj) {
+            return (dateObj instanceof Date) && !isNaN(dateObj) && dateObj >= PRICE_CHANGE_DATE;
+        }
+
+        // 数値を「￥9,360」形式に整形
+        function formatYen(n) {
+            return '￥' + Number(n).toLocaleString('ja-JP');
+        }
+
+        // メニュー詳細の「基本料金」表示（本日の日付で旧/新を切り替え）
+        function getBasicPriceLabel(pair) {
+            const useNew = isNewPricing(new Date());
+            return '基本料金：' + formatYen(useNew ? pair.new : pair.old);
+        }
+
+        // 「2026年09月05日 14:00」形式の文字列から Date を生成（時刻が無くてもOK）
+        function parseSelectedFullDate(str) {
+            const m = str && str.match(/(\d{4})年(\d{2})月(\d{2})日(?:\s+(\d{1,2}):(\d{2}))?/);
+            if (!m) return null;
+            return new Date(
+                Number(m[1]), Number(m[2]) - 1, Number(m[3]),
+                m[4] ? Number(m[4]) : 0, m[5] ? Number(m[5]) : 0, 0
+            );
+        }
+        // =========================================================
+
         function selectSymptom(button, treatmentId) {
             // 選択された日時をリセット
             selectedFullDate = '';
@@ -1653,6 +1879,7 @@ function applyPreviousSelection() {
                 selectedMenuTime = 0;
                 selectedSymptom = null; // 選択されたメニューをリセット
                 menuPrice = 0; // メニュー価格をリセット
+                selectedPricePair = null; // 料金ペアをリセット
                 treatmentText.style.display = 'none';
                 return; // ここで処理を終了
             } else {
@@ -1667,6 +1894,7 @@ function applyPreviousSelection() {
                 selectedMenuTime = menuTimes[selectedMenu] || 0; // メニュー時間を取得して保存
                 selectedSymptom = [selectedMenu]; // 選択されたメニュー名を配列として保存
                 menuPrice = parseInt(button.getAttribute('data-price'), 10) || 0;  // メニューの価格を取得
+                selectedPricePair = MENU_PRICES[treatmentId] || null; // 料金ペアを保存
             }
 
             console.log('選択されたメニューの時間:', selectedMenuTime);
@@ -1696,8 +1924,10 @@ function applyPreviousSelection() {
                     ? `<div class="treatment-price"><span>価格：</span>${price}</div>`
                     : '';
 
+                // 基本料金は本日の日付で旧/新を自動切替（2026/9/1以降は新料金）
+                const dynamicBasic = selectedPricePair ? getBasicPriceLabel(selectedPricePair) : basic;
                 const basicContent = hasBasic
-                    ? `<div class="treatment-basic"><span></span><strong>${basic}</strong></div>`
+                    ? `<div class="treatment-basic"><span></span><strong>${dynamicBasic}</strong></div>`
                     : '';
 
                 // 出力順序を制御（タイトル→画像→詳細→料金→基本料金）
@@ -1844,6 +2074,22 @@ function applyPreviousSelection() {
             element.classList.add('active');
             visitCount = element.innerText;
 
+            // 初診エリアの表示/非表示を切り替え
+            const shoshinArea = document.getElementById('shoshinArea');
+            if (element.id === 'firstVisit') {
+                // 初診の場合は表示し、必須バッジを表示
+                shoshinArea.style.display = 'block';
+                document.querySelectorAll('.shoshin-required').forEach(el => el.style.display = '');
+            } else {
+                // 2回目以降の場合は非表示にし、入力内容をクリア・必須バッジを非表示
+                shoshinArea.style.display = 'none';
+                document.getElementById('message').value = '';
+                document.getElementById('msg_birthday').value = '';
+                document.getElementById('msg_consul').value = '';
+                document.getElementById('msg_child').value = '';
+                document.querySelectorAll('.shoshin-required').forEach(el => el.style.display = 'none');
+            }
+
             // 選択された訪問回数に対応する時間を取得
             selectedVisitTime = visitTimes[visitCount];
 
@@ -1966,29 +2212,41 @@ function submitForm(btn) {
     btn.textContent = '送信中...';
   }
 
+  const nameSei = document.getElementById('nameSei').value.trim();
+  const nameMei = document.getElementById('nameMei').value.trim();
+  const nameSeiKana = document.getElementById('nameSeiKana').value.trim();
+  const nameMeiKana = document.getElementById('nameMeiKana').value.trim();
+
   const formData = {
-    name: document.getElementById('name').value.trim(),
-    namehurigana: document.getElementById('namehurigana').value.trim(),
+    name: (nameSei + ' ' + nameMei).trim(),
+    namehurigana: (nameSeiKana + ' ' + nameMeiKana).trim(),
     phone: document.getElementById('phone').value.trim(),
     visitCount: visitCount,
     selectedMenu: selectedMenu,
     selectedSymptom: selectedSymptom && selectedSymptom.length > 0 ? selectedSymptom : null,
     irradiationsCount: irradiationsCount,
     dates: selectedFullDate ? [selectedFullDate] : null,
-    message: document.getElementById('message').value.trim()
+    message: visitCount === '初診' ? document.getElementById('message').value.trim() : '【通知】2回目以降の方です。'
   };
 
   // ❗バリデーションで止まる場合は、必ず送信状態を戻す
-  if (!formData.name) { alert('氏名を入力してください。'); resetSubmitState(btn); return; }
-  if (!formData.namehurigana) { alert('氏名（カナ）を入力してください。'); resetSubmitState(btn); return; }
+  if (!nameSei) { alert('氏名（苗字）を入力してください。'); resetSubmitState(btn); return; }
+  if (!nameMei) { alert('氏名（名前）を入力してください。'); resetSubmitState(btn); return; }
+  if (!nameSeiKana) { alert('氏名（カナ）の苗字を入力してください。'); resetSubmitState(btn); return; }
+  if (!nameMeiKana) { alert('氏名（カナ）の名前を入力してください。'); resetSubmitState(btn); return; }
   if (!formData.phone) { alert('電話番号を入力してください。'); resetSubmitState(btn); return; }
   if (!formData.selectedSymptom) { alert('メニューを選択してください。'); resetSubmitState(btn); return; }
   if (!formData.dates) { alert('希望日時を選択してください。'); resetSubmitState(btn); return; }
+  // 初診の場合のみチェックボックスと各フィールドを必須チェック
+  if (visitCount === '初診' && !document.getElementById('agreeCheck').checked) { alert('利用規約に同意してください。'); resetSubmitState(btn); return; }
+  if (visitCount === '初診' && !document.getElementById('msg_birthday').value.trim()) { alert('生年月日 / 分娩予定日を入力してください。'); resetSubmitState(btn); return; }
+  if (visitCount === '初診' && !document.getElementById('msg_consul').value.trim()) { alert('相談内容を入力してください。'); resetSubmitState(btn); return; }
+  if (visitCount === '初診' && !document.getElementById('msg_child').value.trim()) { alert('第何子かを入力してください。'); resetSubmitState(btn); return; }
 
   // LINEトークにメッセージを送信
   liff.sendMessages([{
     type: 'text',
-    text: `【予約フォーム】\n氏名：${formData.name}\n氏名（カナ）：${formData.namehurigana}\n電話番号：${formData.phone}\nご来店回数：${formData.visitCount}\nメニュー：${formData.selectedSymptom}\n希望日時：\n ${formData.dates[0]}\n初診の方内容：${formData.message}`
+    text: `【予約フォーム】\n氏名：${formData.name}\n氏名（カナ）：${formData.namehurigana}\n電話番号：${formData.phone}\nご来店回数：${formData.visitCount}\nメニュー：${formData.selectedSymptom}\n希望日時：\n ${formData.dates[0]}\n初診の方内容：\n${visitCount === '初診' ? formData.message : '【通知】2回目以降の方です。'}`
   }]).then(() => {
     alert('キャンセルは無いようにお願いいたします。');
     liff.closeWindow();
@@ -2021,7 +2279,7 @@ function submitForm(btn) {
                 return;
             }
 
-            const url = 'https://script.google.com/macros/s/AKfycbz7cv_rahgYu4eReKdcHoQEfpqXctjfm7z2ieCThcubkxeEWUzTRvrzBRb54vlToKD8rg/exec' +
+            const url = 'https://script.google.com/macros/s/AKfycbyLOtShmUTTizvVZcWrH5PiuXLhDk9cAnbfrUFzmPX_FYLub9vz8MOLy800JiuGHt3x/exec' +
                 `?startTime=${startTime.toISOString()}&endTime=${endTime.toISOString()}`;
 
             try {
@@ -2133,6 +2391,17 @@ function submitForm(btn) {
                         continue;
                     }
 
+                    // 17時以降に終了する予約を不可にする (17:30は可)
+                    if (slotEnd.getHours() === 17 && slotEnd.getMinutes() > 0) {
+                        cell.textContent = '✕';
+                        cell.classList.add('unavailable');
+                        continue;
+                    } else if (slotEnd.getHours() > 17) {
+                        cell.textContent = '✕';
+                        cell.classList.add('unavailable');
+                        continue;
+                    }
+                    
                     // 制限したい時間帯を設定 (13:45 ～ 14:00まで休憩とみなす)
                     const restrictedStart = new Date(day);
                     restrictedStart.setHours(13, 45, 0, 0); // 13:45開始
