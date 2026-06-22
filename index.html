@@ -1421,7 +1421,7 @@
             <button type="button" onclick="selectSymptom(this, 'treatment2')" data-price="15000">産後整体 45分</button>
             <button type="button" onclick="selectSymptom(this, 'treatment8')" data-price="15000">おっぱいマッサージ 45分</button>
             <button type="button" onclick="selectSymptom(this, 'treatment4')" data-price="15000">産後ピラティス 45分</button>
-            <button type="button" onclick="selectSymptom(this, 'treatment5')" data-price="15000">母子ケア 90分</button>
+            <button type="button" onclick="selectSymptom(this, 'treatment5')" data-price="15000">母子/きょうだいケア 90分</button>
             <button type="button" onclick="selectSymptom(this, 'treatment6')" data-price="15000">ファミリーケア 135分</button>
             <button type="button" onclick="selectSymptom(this, 'treatment7')" data-price="15000">整体 45分</button>
         </div>
@@ -1522,7 +1522,7 @@
         <!-- 相談内容 -->
         <div class="label">相談内容<span class="required shoshin-required" style="display:none;">必須</span></div>
         <div class="info-text" style="font-size:13px; padding:10px 14px; margin-bottom:6px;">
-            箇条書きで構いませんので、相談内容をご記入ください
+            箇条書きで構いませんので、相談内容をご記入ください<br>※質問、予約のキャンセル依頼等はご記入されませんようお願いします。対応致しかねます。
         </div>
         <textarea id="msg_consul" rows="4" placeholder="例:腰痛・乳腺炎・頭の形・抱っこ・離乳食" oninput="updateMessage()"></textarea>
 
@@ -1611,7 +1611,7 @@ function resetSubmitState(btn) {
             '産後整体 45分': 45,
             'おっぱいマッサージ 45分': 45,
             '産後ピラティス 45分': 45,
-            '母子ケア 90分': 90,
+            '母子/きょうだいケア 90分': 90,
             'ファミリーケア 135分': 135,
             '整体 45分': 45
         };
@@ -2377,7 +2377,7 @@ function submitForm(btn) {
                 return;
             }
 
-            const url = 'https://script.google.com/macros/s/AKfycbyLOtShmUTTizvVZcWrH5PiuXLhDk9cAnbfrUFzmPX_FYLub9vz8MOLy800JiuGHt3x/exec' +
+            const url = 'https://script.google.com/macros/s/AKfycbz7cv_rahgYu4eReKdcHoQEfpqXctjfm7z2ieCThcubkxeEWUzTRvrzBRb54vlToKD8rg/exec' +
                 `?startTime=${startTime.toISOString()}&endTime=${endTime.toISOString()}`;
 
             try {
